@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+/* --- Global Theme Customization --- */
+@theme {
+  --color-bg: #0f172a; /* Slate-950 tone */
+  --color-text: #f8fafc;
+  --color-accent: #6366f1; /* Indigo */
+  --font-sans: "Inter", system-ui, sans-serif;
+}
+
+/* --- Base Styles --- */
+:root {
+  font-family: var(--font-sans);
+  color: var(--color-text);
+  background-color: var(--color-bg);
+}
+
+/* --- Link Styles --- */
+a {
+  color: var(--color-accent);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+a:hover {
+  color: color-mix(in srgb, var(--color-accent) 80%, white);
+}
+
+/* --- Button Reset (Tailwind handles most of it) --- */
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* --- Optional: Smooth Scroll --- */
+html {
+  scroll-behavior: smooth;
+}
+
+/* --- Optional Light Mode --- */
+@media (prefers-color-scheme: light) {
+  :root {
+    background-color: #ffffff;
+    color: #1e293b;
+  }
+}
