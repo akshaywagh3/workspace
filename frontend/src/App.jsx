@@ -7,6 +7,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import WorkspaceDashboard from "./pages/Workspaces";
 import JoinWorkspace from "./pages/JoinWorkspace";
 import LandingPage from "./pages/LandingPage";
+import WorkspaceDetails from "./pages/WorkspaceDetails";
 
 import './index.css';
 function App() {
@@ -36,6 +37,7 @@ function App() {
         <Route path="/workspaces" element={<ProtectedRoute><WorkspaceDashboard /></ProtectedRoute>} />
         <Route path="/join/:token" element={<ProtectedRoute><JoinWorkspace /></ProtectedRoute>} />
         <Route path="/" element={<LandingPage />} />
+        <Route path="/workspace/:id" element={<WorkspaceDetails />} />
 
       </Routes>
     </Router>
