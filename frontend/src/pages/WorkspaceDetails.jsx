@@ -50,7 +50,7 @@ export default function WorkspaceDetails() {
       <div className="flex-1 p-8 overflow-y-auto">
         {activeTab === "overview" && (
           <div>
-            <h1 className="text-3xl font-bold mb-6">Workspace Overview</h1>
+            <h1 className="text-3xl font-bold mb-6">Workspace Overview </h1> 
 
             {/* Summary Cards */}
             {/* <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -58,7 +58,7 @@ export default function WorkspaceDetails() {
                 <SummaryCard label="Notes" value={stats.totalNotes} />
                 <SummaryCard label="Files" value={stats.totalFiles} />
                 <SummaryCard label="Members" value={stats.totalMembers} />
-            </div> */}
+            </div> */} 
 
             {/* Recent Activity */}
             {/* <div className="bg-gray-900 p-5 rounded-xl border border-gray-800 mb-8">
