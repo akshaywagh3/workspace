@@ -60,7 +60,7 @@ export default function WorkspaceDetails() {
                 <SummaryCard label="Members" value={stats.totalMembers} />
             </div> */} 
 
-            {/* Recent Activity */}
+            {/* Recent Activity */} 
             {/* <div className="bg-gray-900 p-5 rounded-xl border border-gray-800 mb-8">
                 <h2 className="text-xl font-semibold mb-3 text-indigo-300">Recent Activity</h2>
                 {activity.length === 0 ? (
