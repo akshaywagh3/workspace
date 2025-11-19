@@ -7,6 +7,7 @@ import {
   ClockIcon,
   HomeIcon,
 } from "@heroicons/react/24/outline";
+import ChatSection from "../components/Chat/ChatSection";
 
 export default function WorkspaceDetails() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -102,10 +103,8 @@ export default function WorkspaceDetails() {
 
         {activeTab === "chat" && (
           <div className="h-full">
-            <h1 className="text-3xl font-bold mb-4">Chat</h1>
-            <div className="bg-gray-900 border border-gray-800 rounded-xl h-[70vh] p-4">
-              <p className="text-gray-400">Chat UI goes here...</p>
-            </div>
+              <h1 className="text-3xl font-bold mb-4">Chat</h1>
+              <ChatSection />
           </div>
         )}
 
