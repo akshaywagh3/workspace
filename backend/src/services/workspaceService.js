@@ -28,7 +28,7 @@ class WorkspaceService {
     if (!workspace) throw new ErrorHandler("Workspace not found", 404);
 
     const token = workspace.inviteToken;
-    return `${process.env.FRONTEND_URL}/join/${workspace.inviteToken}`
+    return `${process.env.CLIENT_URL}/join/${workspace.inviteToken}`
   }
 
   async joinbyInvite(userId,token){

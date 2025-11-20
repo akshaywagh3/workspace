@@ -13,6 +13,13 @@ class Chatservice{
         
     }
 
+    async getChatById(chatId) {
+        if (!chatId) throw new ErrorHandler("chatId required", 400);
+        const chat = await this.ChatRepo.findById(chatId);
+        if (!chat) throw new ErrorHandler("Chat not found", 404);
+        return chat;
+    }
+
     async createGroupChat(name, members, workspaceId) {
         if(!name)  throw ErrorHandler('Name is required',400);
 
@@ -62,16 +69,57 @@ class Chatservice{
     }
 
     // Send message
-    async sendMessage(chatId, senderId, content, type = "text") {
+    async sendMessage(chatId, senderId, content, type = "text", attachments = [], clientMessageId = null) {
+        const chat = await this.ChatRepo.findById(chatId);
+        if (!chat) throw new ErrorHandler("Chat not found", 404);
 
+        if (!content && (!attachments || attachments.length === 0)) {
+            throw new ErrorHandler("Message content or attachments required", 400);
+        }
+
+        const chatid = await this.ChatRepo.getChatById(chatId);
+
+        const isMember = chatid.members.map((member)=>{
+            return member.toString()
+        }).includes(senderId.toString())
+
+        if (!isMember) throw new ErrorHandler("Not a member of chat", 403);
+
+        // idempotency check
+        if (clientMessageId) {
+            const existing = await this.messageRepo.findByClientId(clientMessageId);
+            if (existing) return existing;
+        }
+
+        const message = await this.messageRepo.create({
+            chatId,
+            sender:senderId,
+            content,
+            type,
+            attachments,
+            clientMessageId
+        });
+
+
+       await this.updateLastMessage(chatId, message._id)
+
+        return message;
     }
 
      // Fetch messages
     async getMessages(chatId) {
-        const chat = await this.chatRepo.findById(chatId);
+        const chat = await this.ChatRepo.findById(chatId);
         if (!chat) throw new ErrorHandler("Chat not found", 404);
 
         return this.messageRepo.getMessages(chatId);
+    }
+    async updateLastMessage(chatId, messageId) {
+        return this.ChatRepo.updateLastMessage(chatId, messageId);
+    }
+
+    async getMessagesPaged(chatId, opts) {
+            await this.getChatById(chatId); // validation
+            return this.messageRepo.getMessagesPaged(chatId, opts);
     }
 
     // Mark message as read
@@ -80,6 +128,21 @@ class Chatservice{
         if (!msg) throw new ErrorHandler("Message not found", 404);
 
         return this.messageRepo.markAsRead(messageId, userId);
+    }
+
+    async editMessage(messageId, userId, content) {
+        const msg = await this.messageRepo.findById(messageId);
+        if (!msg) throw new ErrorHandler("Message not found", 404);
+        if (msg.sender.toString() !== userId.toString()) throw new ErrorHandler("Not authorized to edit", 403);
+
+        return this.messageRepo.update(messageId, { content, edited: true });
+    }
+
+    async deleteMessage(messageId, userId) {
+        const msg = await this.messageRepo.findById(messageId);
+        if (!msg) throw new ErrorHandler("Message not found", 404);
+        if (msg.sender.toString() !== userId.toString()) throw new ErrorHandler("Not authorized to delete", 403);
+        return this.messageRepo.softDelete(messageId);
     }
 
 }

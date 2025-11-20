@@ -7,7 +7,8 @@ const Chatroom = mongoose.Schema({
     participants: [{
             user: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
         }],   
+    lastMessage: { type: mongoose.Schema.Types.ObjectId, ref: "Message" },
     lastMessageAt: { type: Date }
 });
 
-export default mongoose.model('ChatMessage',Chatroom)
+export default mongoose.model('Chat',Chatroom)

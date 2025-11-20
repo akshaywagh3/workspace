@@ -2,7 +2,7 @@ import http from "http";
 import { Server } from "socket.io";
 import app from "./app.js";
 import SocketManager from "./src/sockets/socketManager.js";
-
+import setupChatSocket from "./sockets/chatSocket.js";
 const server = http.createServer(app);
 
 // Initialize SocketManager
@@ -16,36 +16,14 @@ socketManager.initialize();
 //   },
 // });
 
-// // socket middleware for authentication (later we’ll extend with JWT)
-// io.use((socket, next) => {
-//   const token = socket.handshake.auth?.token;
-//   if (!token) {
-//     return next(new Error("Authentication error"));
-//   }
-//   // TODO: verify JWT here
-//   socket.user = { id: "demoUser" }; 
-//   next();
-// });
+const io = new Server(server , {
+    cors:{
+        origin : process.env.CLIENT_URL || "http://localhost:5173",
+        methods: ['POST','GET'],
+    },
+});
 
-// io.on("connection", (socket) => {
-//   console.log("New client connected:", socket.id);
+setupChatSocket(io, { jwtSecret: process.env.JWT_SECRET, logger: console });
 
-//   // Join workspace (room)
-//   socket.on("joinWorkspace", (workspaceId) => {
-//     socket.join(workspaceId);
-//     console.log(`User ${socket.id} joined workspace ${workspaceId}`);
-//   });
-
-//   // Handle drawing event
-//   socket.on("draw", ({ workspaceId, drawingData }) => {
-//     // broadcast to others in workspace
-//     socket.to(workspaceId).emit("draw", drawingData);
-//   });
-
-//   // Handle disconnect
-//   socket.on("disconnect", () => {
-//     console.log("Client disconnected:", socket.id);
-//   });
-// });
 
 export default server;
