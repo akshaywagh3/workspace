@@ -8,6 +8,8 @@ import WorkspaceDashboard from "./pages/Workspaces";
 import JoinWorkspace from "./pages/JoinWorkspace";
 import LandingPage from "./pages/LandingPage";
 import WorkspaceDetails from "./pages/WorkspaceDetails";
+import ChatList from "./components/Chat/ChatList";
+import ChatSection from "./components/Chat/ChatSection";
 
 import './index.css';
 function App() {
@@ -38,6 +40,15 @@ function App() {
         <Route path="/join/:token" element={<ProtectedRoute><JoinWorkspace /></ProtectedRoute>} />
         <Route path="/" element={<LandingPage />} />
         <Route path="/workspace/:id" element={<WorkspaceDetails />} />
+        <Route
+            path="/workspace/:workspaceId/chat/:chatId"
+            element={
+              <div className="flex">
+                <ChatList />
+                <ChatSection />
+              </div>
+            }
+          />
 
       </Routes>
     </Router>

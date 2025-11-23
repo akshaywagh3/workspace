@@ -7,32 +7,35 @@ import {
   sendMessage,
   addMemberToGroup,
   removeMemberFromGroup,
-  markMessageAsRead,getMessagesPaged
+  markMessageAsRead,getMessagesPaged,
+  getWorkspaceChats
 } from "../controllers/chatController.js";
 
-import { isAuthenticated } from "../middleware/authMiddleware.js";
+import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
 // Direct chat
-router.post("/direct", isAuthenticated, getOrCreateDirectChat);
+router.post("/direct", protect, getOrCreateDirectChat);
 
 // Group chat
-router.post("/group", isAuthenticated, createGroupChat);
+router.post("/group", protect, createGroupChat);
 
 // Fetch chats
-router.get("/my", isAuthenticated, getMyChats);
+router.get("/my", protect, getMyChats);
 
 // Messages
-router.get("/:id/messages", isAuthenticated, getMessages);
-router.post("/send", isAuthenticated, sendMessage);
+router.get("/:id/messages", protect, getMessages);
+router.post("/send", protect, sendMessage);
 
 // Group member manage
-router.post("/group/add-member", isAuthenticated, addMemberToGroup);
-router.post("/group/remove-member", isAuthenticated, removeMemberFromGroup);
+router.post("/group/add-member", protect, addMemberToGroup);
+router.post("/group/remove-member", protect, removeMemberFromGroup);
 
 // Read receipts
-router.post("/read/:id", isAuthenticated, markMessageAsRead);
-router.post("/chats/:chatId/messages", isAuthenticated, getMessagesPaged);
+router.post("/read/:id", protect, markMessageAsRead);
+router.post("/chats/:chatId/messages", protect, getMessagesPaged);
+router.get("/workspaces/:workspaceId/chats", protect, getWorkspaceChats);
+
 
 export default router;

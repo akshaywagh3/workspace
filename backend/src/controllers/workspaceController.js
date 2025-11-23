@@ -70,3 +70,28 @@ export const joinByToken = async (req, res, next) => {
   }
 };
 
+export const getWorkspaceById = async (req, res,next) => {
+    try {
+      const { workspaceId } = req.params;
+
+      // Fetch workspace
+      const workspace = await workspaceService.getWorkspaceById(workspaceId);
+      if (!workspace) return res.status(404).json({ message: "Workspace not found" });
+
+      // Optionally, get or create a chat for this workspace
+      const chat = await workspaceService.getOrCreateWorkspaceChat(workspaceId);
+
+      // return res.json({ workspace, chatId: chat._id });
+      return res.json({
+      workspace: {
+        ...workspace,
+        chats: [chat]  // you can expand later to include multiple chats
+      }
+    });
+
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ message: "Internal server error" });
+
+    }
+  }

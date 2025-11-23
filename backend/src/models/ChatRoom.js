@@ -17,6 +17,6 @@ const Chatroom = new mongoose.Schema({
     lastMessage: { type: mongoose.Schema.Types.ObjectId, ref: "Message" },
     lastMessageAt: { type: Date }
 });
-chatSchema.index({ workspaceId: 1 });
+Chatroom.index({ workspaceId: 1 });
 
 export default mongoose.model('Chat',Chatroom)

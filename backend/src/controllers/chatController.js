@@ -117,6 +117,20 @@ export const markMessageAsRead = async (req, res, next) => {
   }
 };
 
+export const getWorkspaceChats = async (req, res, next) => {
+    try {
+      const { workspaceId } = req.params;
+      const chats = await chatService.getWorkspaceChats(workspaceId);
+
+      res.json({
+        success: true,
+        chats,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
 export const getMessagesPaged = async (req, res, next) => {
   try {
     const { chatId } = req.params;

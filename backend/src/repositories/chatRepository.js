@@ -6,6 +6,10 @@ class ChatRepository {
     return Chat.findById(id).populate("members", "firstname lastname email");
   }
 
+  async getChatById(id) {
+    return Chat.findById(id);
+  }
+
   async findDirectChat(user1, user2, workspaceId) {
     return Chat.findOne({
       type: "direct",
@@ -53,6 +57,16 @@ class ChatRepository {
   async getMemberCursor(chatId, userId) {
     const chat = await Chat.findOne({ _id: chatId, "members.user": userId }, { "members.$": 1 }).lean();
     return chat?.members?.[0] || null;
+  }
+
+  async getWorkspaceChats(workspaceId){
+    return await Chat.find({ workspaceId })
+        .select("_id name type participants lastMessage updatedAt")
+        .sort({ updatedAt: -1 });
+  }
+
+  async findOne(query) {
+    return await Chat.findOne(query);
   }
 }
 

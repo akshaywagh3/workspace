@@ -106,6 +106,27 @@ class Chatservice{
         return message;
     }
 
+
+    async markChatAsRead(chatId, userId, lastReadMessageId = null) {
+        if (!chatId || !userId) throw new ErrorHandler("chatId and userId required", 400);
+
+        // Ensure chat exists & user is a member
+        const chat = await this.ChatRepo.findById(chatId);
+        if (!chat) throw new ErrorHandler("Chat not found", 404);
+
+        const isMember = chat.members.map(m => m.user.toString()).includes(userId.toString());
+        if (!isMember) throw new ErrorHandler("Not a member of chat", 403);
+
+        // If client didn't supply a lastReadMessageId, use chat.lastMessage
+        const cursorMessageId = lastReadMessageId || chat.lastMessage || null;
+
+        // Update chat member cursor
+        const updatedChat = await this.ChatRepo.updateMemberReadCursor(chatId, userId, cursorMessageId);
+
+        // Optionally: compute unreadCount or other metadata as needed (offloaded to callers)
+        return { chat: updatedChat, lastReadMessageId: cursorMessageId };
+    }
+
      // Fetch messages
     async getMessages(chatId) {
         const chat = await this.ChatRepo.findById(chatId);
@@ -145,6 +166,10 @@ class Chatservice{
         return this.messageRepo.softDelete(messageId);
     }
 
+    async getWorkspaceChats(workspaceId) {
+        return await ChatRepo.getWorkspaceChats(workspaceId)
+        
+    }
 }
 
 export default Chatservice;

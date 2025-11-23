@@ -1,7 +1,7 @@
 import React from "react";
 
-export default function MessageBubble({ message }) {
-  const { sender, text, time, isMine } = message;
+export default function MessageBubble({ message, currentUser }) {
+  const isMine = message.sender === currentUser.id;
 
   return (
     <div className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
@@ -13,10 +13,20 @@ export default function MessageBubble({ message }) {
         }`}
       >
         {!isMine && (
-          <p className="text-xs mb-1 text-indigo-300 font-medium">{sender}</p>
+          <p className="text-xs mb-1 text-indigo-300 font-medium">
+            {message.senderName}
+          </p>
         )}
-        <p className="leading-snug">{text}</p>
-        <p className="text-[10px] mt-1 opacity-80 text-right">{time}</p>
+
+        <p className="leading-snug">{message.messageText}</p>
+
+        <div className="flex justify-between items-center mt-1">
+          <p className="text-[10px] opacity-80">{message.time}</p>
+
+          {isMine && message.readBy && message.readBy.length > 1 && (
+            <p className="text-[10px] ml-2 opacity-75">✔✔</p> // double tick = seen
+          )}
+        </div>
       </div>
     </div>
   );

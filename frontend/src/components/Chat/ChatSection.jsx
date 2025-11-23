@@ -1,33 +1,86 @@
 import React, { useState, useRef, useEffect } from "react";
 import MessageBubble from "./MessageBubble";
+import io from 'socket.io-client';
 
-export default function ChatSection() {
-  const [messages, setMessages] = useState([
-    { id: 1, sender: "You", text: "Welcome to the workspace! 🎉", isMine: true, time: "10:20 AM" },
-    { id: 2, sender: "John", text: "Hello! Let’s begin our work.", isMine: false, time: "10:22 AM" },
-  ]);
+const SOCKET_URL = "http://localhost:5000";
+
+export default function ChatSection({ chatId, workspaceId, currentUser }) {
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
-
+  const socketRef = useRef(null);
   const messageEndRef = useRef(null);
 
+  // Auto-scroll
   useEffect(() => {
     messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // ⬅️ SOCKET CONNECTION + JOIN CHAT
+  useEffect(() => {
+    if (socketRef.current) socketRef.current.disconnect();
+
+    socketRef.current = io(SOCKET_URL, {
+      auth: { token: localStorage.getItem("token") }
+    });
+
+    // Clear old listeners (avoid duplicates)
+    socketRef.current.off("message:new");
+    socketRef.current.off("message:read");
+
+    // Join the chat
+    socketRef.current.emit("JoinChat", { chatId });
+
+    // Receive new messages
+    socketRef.current.on("message:new", (msg) => {
+      setMessages((prev) => [...prev, msg]);
+    });
+
+    // Read receipts
+    socketRef.current.on("message:read", ({ userId, lastReadMessageId }) => {
+      setMessages((prev) =>
+        prev.map((m) =>
+          m._id <= lastReadMessageId
+            ? { ...m, readBy: [...new Set([...(m.readBy || []), userId])] }
+            : m
+        )
+      );
+    });
+
+    return () => socketRef.current.disconnect();
+  }, [chatId]);
+
+
+  // ⬅️ SEND MESSAGE
   const sendMessage = () => {
     if (!input.trim()) return;
 
-    const newMsg = {
-      id: Date.now(),
-      sender: "You",
-      text: input,
-      isMine: true,
-      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    const payload = {
+      chatId,
+      content: input,
     };
 
-    setMessages([...messages, newMsg]);
-    setInput("");
+    socketRef.current.emit("SendMessage", { payload }, (ack) => {
+      if (ack?.success) setInput("");
+    });
   };
+
+
+  // ⬅️ MARK AS READ
+  const markAsRead = () => {
+    const last = messages[messages.length - 1];
+    if (!last) return;
+
+    socketRef.current.emit("read_messages", {
+      chatId,
+      lastReadMessageId: last._id,
+    });
+  };
+
+  // Trigger markAsRead on message updates
+  useEffect(() => {
+    if (messages.length > 0) markAsRead();
+  }, [messages]);
+
 
   return (
     <div className="flex flex-col h-[75vh] bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
@@ -37,10 +90,10 @@ export default function ChatSection() {
         <h2 className="text-xl font-semibold text-indigo-300">Chat Room</h2>
       </div>
 
-      {/* Messages List */}
+      {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-800">
         {messages.map((msg) => (
-          <MessageBubble key={msg.id} message={msg} />
+          <MessageBubble key={msg._id} message={msg} currentUser={currentUser} />
         ))}
         <div ref={messageEndRef}></div>
       </div>
@@ -63,7 +116,6 @@ export default function ChatSection() {
           Send
         </button>
       </div>
-
     </div>
   );
 }

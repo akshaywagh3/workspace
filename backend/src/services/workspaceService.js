@@ -1,9 +1,11 @@
 import WorkspaceRepository from "../repositories/workspaceRepository.js";
+import ChatRepository from "../repositories/chatRepository.js";
 import  ErrorHandler  from "../middleware/errorMiddleware.js";
 import crypto from "crypto";
 class WorkspaceService {
   constructor() {
     this.workspaceRepo = new WorkspaceRepository();
+    this.chatRepo = new ChatRepository();
   }
 
   async createWorkspace(userId, name) {
@@ -82,6 +84,18 @@ class WorkspaceService {
 
     await this.workspaceRepo.deleteById(workspaceId);
     return { message: "Workspace deleted" };
+  }
+
+  async getWorkspaceById(workspaceId) {
+    return await this.workspaceRepo.findById(workspaceId);
+  }
+
+  async getOrCreateWorkspaceChat(workspaceId) {
+    let chat = await this.chatRepo.findOne({ workspaceId });
+    if (!chat) {
+      chat = await this.chatRepo.create({ workspaceId, members: [] });
+    }
+    return chat;
   }
 }
 
