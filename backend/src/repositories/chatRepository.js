@@ -36,6 +36,24 @@ class ChatRepository {
   async updateLastMessage(chatId, messageId) {
     return Chat.findByIdAndUpdate(chatId, { lastMessage: messageId, lastMessageAt: new Date() }, { new: true });
   }
+
+  async updateMemberReadCursor(chatId, userId, lastReadMessageId) {
+    const update = {
+      $set: {
+        "members.$.lastReadMessageId": lastReadMessageId ? new mongoose.Types.ObjectId(lastReadMessageId) : null,
+        "members.$.lastReadAt": new Date()
+      }
+    };
+
+    const query = { _id: new mongoose.Types.ObjectId(chatId), "members.user": new mongoose.Types.ObjectId(userId) };
+
+    return Chat.findOneAndUpdate(query, update, { new: true });
+  }
+
+  async getMemberCursor(chatId, userId) {
+    const chat = await Chat.findOne({ _id: chatId, "members.user": userId }, { "members.$": 1 }).lean();
+    return chat?.members?.[0] || null;
+  }
 }
 
 export default ChatRepository;

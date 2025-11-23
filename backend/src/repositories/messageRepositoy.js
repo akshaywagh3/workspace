@@ -37,12 +37,33 @@ class MessageRepository {
     );
   }
 
+  async seenAll(chatId, userId) {
+     result = Message.updateMany(
+      {chatId:chatId},
+      {
+        $addToSet: { readBy: { user: userId, readAt: new Date() } },
+      },
+
+    );
+    return result.modifiedCount > 0;
+  }
+
   async update(messageId, data) {
     return Message.findByIdAndUpdate(messageId, data, { new: true });
   }
 
   async softDelete(messageId) {
     return Message.findByIdAndUpdate(messageId, { deleted: true }, { new: true });
+  }
+
+  async deleteMessage(messageId,userId) {
+    const deleted = await Message.findOneAndDelete({_id: messageId, sender: userId});
+
+    if ( !deleted ) {
+      return false;
+    } else {
+      return true;
+    }
   }
 }
 

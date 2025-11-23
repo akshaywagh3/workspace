@@ -20,7 +20,9 @@ const io = new Server(server , {
     cors:{
         origin : process.env.CLIENT_URL || "http://localhost:5173",
         methods: ['POST','GET'],
+        credentials: true
     },
+    transports: ["websocket", "polling"],
 });
 
 setupChatSocket(io, { jwtSecret: process.env.JWT_SECRET, logger: console });

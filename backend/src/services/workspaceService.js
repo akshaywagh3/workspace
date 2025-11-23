@@ -46,6 +46,20 @@ class WorkspaceService {
     return workspace;
   }
 
+  async IsMember(workspaceId,userId){
+    const workspace = await this.Workspace.findById(workspaceId );
+    if (!workspace) throw new ErrorHandler("Workspace not found", 404);
+
+    const alreadyMember = workspace.members.some(
+      (m) => m.user.toString() === userId
+    );
+    if (!alreadyMember) {
+       throw new ErrorHandler("Member not found", 404);
+    }
+    return workspace;
+
+  }
+
   async addMember(workspaceId, userId) {
     const workspace = await this.workspaceRepo.findById(workspaceId);
     if (!workspace) throw new ErrorHandler("Workspace not found", 404);

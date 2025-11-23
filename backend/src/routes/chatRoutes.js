@@ -7,7 +7,7 @@ import {
   sendMessage,
   addMemberToGroup,
   removeMemberFromGroup,
-  markMessageAsRead
+  markMessageAsRead,getMessagesPaged
 } from "../controllers/chatController.js";
 
 import { isAuthenticated } from "../middleware/authMiddleware.js";
@@ -33,5 +33,6 @@ router.post("/group/remove-member", isAuthenticated, removeMemberFromGroup);
 
 // Read receipts
 router.post("/read/:id", isAuthenticated, markMessageAsRead);
+router.post("/chats/:chatId/messages", isAuthenticated, getMessagesPaged);
 
 export default router;
