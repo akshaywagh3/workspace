@@ -1,10 +1,12 @@
 import ChatRepository from "../repositories/chatRepository.js";
 import MessageRepository from "../repositories/messageRepository.js";
+import WorkspaceRepository from "../repositories/workspaceRepository.js";
 import ErrorHandler from "../middleware/errorMiddleware.js";
 
 class Chatservice{
     constructor() {
         this.ChatRepo = new ChatRepository();
+        this.workspaceRepo = new WorkspaceRepository();
         this.messageRepo = new MessageRepository();
     }
 
@@ -39,7 +41,7 @@ class Chatservice{
 
         if (!userId) throw new ErrorHandler("User ID is required", 400);
 
-        return this.chatRepo.getUserChats(userId);
+        return this.ChatRepo.getUserChats(userId);
 
     }
 
@@ -76,20 +78,38 @@ class Chatservice{
         if (!content && (!attachments || attachments.length === 0)) {
             throw new ErrorHandler("Message content or attachments required", 400);
         }
+        const chatData = await this.ChatRepo.getChatById(chatId);
 
-        const chatid = await this.ChatRepo.getChatById(chatId);
+            if (chatData.workspaceId && chatData.type == 'general') {
+                const workspace = await this.workspaceRepo.findById(chatData.workspaceId);
 
-        const isMember = chatid.members.map((member)=>{
-            return member.toString()
-        }).includes(senderId.toString())
+                const isWorkspaceMember = workspace.members
+                    .map((m) => m.user.toString())
+                    .includes(senderId.toString());
 
-        if (!isMember) throw new ErrorHandler("Not a member of chat", 403);
+                    console.log(isWorkspaceMember)
+                    console.log(workspace.members)
 
-        // idempotency check
-        if (clientMessageId) {
-            const existing = await this.messageRepo.findByClientId(clientMessageId);
-            if (existing) return existing;
-        }
+                if (!isWorkspaceMember) {
+                    throw new ErrorHandler(`Not a member of workspace ${workspace.name}`, 403);
+                }
+
+            } else {
+                // Private chat: check chat.members
+                const isMember = chatData.members
+                    .map((m) => m.user.toStrin())
+                    .includes(senderId.toString());
+
+                if (!isMember) {
+                    throw new ErrorHandler("Not a member of chat", 403);
+                }
+            }
+
+            // idempotency check
+            if (clientMessageId) {
+                const existing = await this.messageRepo.findByClientId(clientMessageId);
+                if (existing) return existing;
+            }
 
         const message = await this.messageRepo.create({
             chatId,
@@ -138,9 +158,25 @@ class Chatservice{
         return this.ChatRepo.updateLastMessage(chatId, messageId);
     }
 
-    async getMessagesPaged(chatId, opts) {
-            await this.getChatById(chatId); // validation
-            return this.messageRepo.getMessagesPaged(chatId, opts);
+    async getMessagesPaged(chatId, opts ={}) {
+            const { beforeId, limit, userId } = opts;
+
+            const chat = await this.ChatRepo.findById(chatId);
+            if (!chat) throw new ErrorHandler("Chat not found", 404);
+
+            // Optional: check if user is part of chat/workspace
+            if (chat.type === "direct") {
+            const isMember = chat.members.map(m => m.toString()).includes(userId.toString());
+            if (!isMember) throw new ErrorHandler("Not a member of this chat", 403);
+            }
+
+            // Query messages
+            const query = { chatId };
+            if (beforeId) query._id = { $lt: beforeId }; // older messages
+
+            const messages = await this.messageRepo.findbyData(query,limit)
+
+            return messages.reverse();
     }
 
     // Mark message as read

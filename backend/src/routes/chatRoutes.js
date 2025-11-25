@@ -25,7 +25,7 @@ router.post("/group", protect, createGroupChat);
 router.get("/my", protect, getMyChats);
 
 // Messages
-router.get("/:id/messages", protect, getMessages);
+// router.get("/:id/messages", protect, getMessages);
 router.post("/send", protect, sendMessage);
 
 // Group member manage
@@ -34,7 +34,7 @@ router.post("/group/remove-member", protect, removeMemberFromGroup);
 
 // Read receipts
 router.post("/read/:id", protect, markMessageAsRead);
-router.post("/chats/:chatId/messages", protect, getMessagesPaged);
+router.get("/:chatId/messages", protect, getMessagesPaged);
 router.get("/workspaces/:workspaceId/chats", protect, getWorkspaceChats);
 
 

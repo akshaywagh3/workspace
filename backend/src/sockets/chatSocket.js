@@ -40,9 +40,9 @@ const workspaceService = WorkspaceService;
                 try{
                     if(!workspaceId) throw new ErrorHandler("Workspace Id required", 400);
         
-                    let isMember1 = await workspaceService.isMember(workspaceId,socket.user.id);
+                    let isMember1 = await workspaceService.IsMember(workspaceId,socket.user.id);
         
-                    if(!isMember1) throw new ErrorHandler("Not a member of workspace", 403);
+                    if(!isMember1) throw new ErrorHandler("Not a member of workspace ", 403);
         
                     socket.join(`workspace:${workspaceId}`);
         
@@ -102,6 +102,8 @@ const workspaceService = WorkspaceService;
                     if (!chatId) throw new ErrorHandler("chatId required", 400);
                     const chat = await chatService.getChatById(chatId);
                     if (!content && (!attachments || attachments.length === 0)) throw new ErrorHandler("Message content required", 400);
+
+
         
                     const message = await chatService.sendMessage(chatId,socket.user.id,content,type,attachments,clientMessageId)
         

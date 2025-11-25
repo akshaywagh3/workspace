@@ -40,7 +40,7 @@ class AuthAPI {
         firstname,
         lastname,
       });
-      return res; 
+      return res.data; 
     } catch (err) {
       console.error("Registration failed:", err.response?.data || err.message);
       return err.response?.data || { success: false, message: "Server error" };

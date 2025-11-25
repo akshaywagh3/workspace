@@ -1,6 +1,7 @@
 import UserModel from "./User.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import ErrorHandler from "../middleware/errorMiddleware.js";
 
 class User {
   #email;
@@ -17,7 +18,7 @@ class User {
 
   async register() {
     const userExists = await UserModel.findOne({ email: this.#email });
-    if (userExists) throw new Error("User already exists");
+    if (userExists) throw new ErrorHandler("User already exists");
 
     const hashedPassword = await bcrypt.hash(this.#password, 10);
     const newUser = new UserModel({
@@ -32,10 +33,10 @@ class User {
 
   static async login(email, password) {
     const user = await UserModel.findOne({ email });
-    if (!user) throw new Error("Invalid credentials");
+    if (!user) throw new ErrorHandler("Invalid credentials");
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) throw new Error("Invalid credentials");
+    if (!isMatch) throw new ErrorHandler("Invalid credentials");
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "1h",

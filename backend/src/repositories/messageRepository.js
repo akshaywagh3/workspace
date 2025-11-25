@@ -27,6 +27,15 @@ class MessageRepository {
       .lean();
   }
 
+  async getMessages(chatId) {
+    return await Message.find({ chatId }).sort({ createdAt: 1 }).lean();
+  }
+
+  async findbyData(data, limit){
+    return await Message.find(data).sort({ _id: -1 }) // latest first
+            .limit(limit || 20)
+            .lean();
+  }
   async markAsRead(messageId, userId) {
     return Message.findByIdAndUpdate(
       messageId,
